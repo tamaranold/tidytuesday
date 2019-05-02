@@ -1,0 +1,231 @@
+---
+title: "Board Games Database"
+author: "Tamara Nold"
+TidyTuesday: "https://github.com/rfordatascience/tidytuesday/tree/master/data/2019/2019-03-12"
+output: html_document
+---
+
+# Load packages
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(summarytools)
+```
+
+# Import data
+```{r}
+board_games <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-03-12/board_games.csv")
+
+view(dfSummary(board_games))
+
+```
+
+# Thoughts 
+As a board gamer, I want to know which game I missed and how to find the best games. 
+
+Filter for interesting variables:
+```{r}
+games_sub <- board_games %>%
+  select(name,
+         users_rated, 
+         average_rating, 
+         playing_time,
+         min_age, 
+         min_players, 
+         max_players,
+         category,
+         mechanic, 
+         designer, 
+         expansion, 
+         publisher)
+
+view(dfSummary(games_sub))
+```
+
+
+# Which game is a must-have?
+```{r}
+games_sub %>%
+  top_n(20, average_rating) %>%
+  ggplot(aes(x = fct_reorder(name, average_rating), 
+             y = average_rating, 
+             size = users_rated, 
+             color = users_rated)) + 
+  geom_point() + 
+  labs(title = "Which Game is a Must-Have?",
+       subtitle = "Top 20 Board Games by Score", 
+       x = "", 
+       y = "Average rating (1-10)",
+       caption = "(based on data from Board Games Geek)") +
+  coord_flip() +
+  theme_light() +
+  theme(legend.position = "none")
+```
+
+# Which game is a must-have by category?
+```{r}
+top_category <- games_sub %>%
+  separate_rows(category, sep = ",") %>%
+  count(category) %>%
+  top_n(20, n) %>%
+  select(category) %>%
+  unlist()
+
+games_sub %>%
+  filter(category %in% top_category) %>%
+  ggplot(aes(x = category, 
+             y = average_rating)) + 
+  geom_boxplot() + 
+  labs(title = "Top 20 Board Games Categories by Score",
+       x = "", 
+       y = "Average rating (1-10)") +
+  coord_flip() +
+  theme_light() +
+  theme(legend.position = "none")
+
+games_sub %>%
+  filter(category %in% top_category) %>%
+  group_by(category) %>%
+  top_n(1, average_rating) %>%
+  select(category, name, average_rating, users_rated) %>%
+  ggplot(aes(x = fct_reorder(category, average_rating), 
+             y = average_rating, 
+             size = users_rated, 
+             color = users_rated)) +
+  geom_point() +
+  geom_text(aes(label = name), check_overlap = T, show.legend = F, size = 3, color = "black") +
+  labs(title = "Which Game is a must-have by Category?",
+       subtitle = "Top 20 of most extensive Sategories", 
+       x = "", 
+       y = "Average rating (1-10)",
+       caption = "(based on data from Board Games Geek)") +
+  coord_flip() +
+  theme_light() +
+  theme(legend.position = "none")
+
+
+```
+# Which publisher has a guarantee of success?
+```{r}
+top_publisher <- games_sub %>%
+  separate_rows(publisher, sep = ",") %>%
+  group_by(publisher) %>%
+  summarise(max_rating = max(average_rating)) %>%
+  top_n(20, max_rating) %>%
+  select(publisher) %>% 
+  ungroup() %>%
+  unlist()
+  
+games_sub %>%
+  separate_rows(publisher, sep = ",") %>%
+  filter(publisher %in% top_publisher) %>%
+  ggplot(aes(x = fct_reorder(publisher, average_rating), 
+             y = average_rating)) +
+  geom_boxplot() +
+  labs(title = "Which Publisher has a Guarantee of Success?",
+       subtitle = "Games of the Top 20 Publishers by Score", 
+       x = "", 
+       y = "Average rating (1-10)",
+       caption = "(based on data from Board Games Geek)") +
+  coord_flip() +
+  theme_light() 
+
+```
+
+# Which publisher should stay at the store?
+```{r}
+flop_publisher <- games_sub %>%
+  separate_rows(publisher, sep = ",") %>%
+  group_by(publisher) %>%
+  summarise(min_rating = min(average_rating)) %>%
+  top_n(20, desc(min_rating)) %>%
+  select(publisher) %>% 
+  ungroup() %>%
+  unlist()
+  
+games_sub %>%
+  separate_rows(publisher, sep = ",") %>%
+  filter(publisher %in% flop_publisher) %>%
+  ggplot(aes(x = fct_reorder(publisher, average_rating), 
+             y = average_rating)) +
+  geom_boxplot() +
+  labs(title = "The Games of which Publisher should stay at the Store?",
+       subtitle = "Games of the Flop 20 Publishers by Score", 
+       x = "", 
+       y = "Average rating (1-10)",
+       caption = "(based on data from Board Games Geek)") +
+  coord_flip() +
+  theme_light() 
+
+```
+# Which designer has a guarantee of success?
+```{r}
+top_designer <- games_sub %>%
+  separate_rows(designer, sep = ",") %>%
+  group_by(designer) %>%
+  summarise(max_rating = max(average_rating)) %>%
+  top_n(20, max_rating) %>%
+  select(designer) %>% 
+  ungroup() %>%
+  unlist()
+
+games_sub %>%
+  separate_rows(designer, sep = ",") %>%
+  filter(designer %in% top_designer) %>%
+  ggplot(aes(x = fct_reorder(designer, average_rating), 
+             y = average_rating)) +
+  geom_boxplot() +
+  labs(title = "Which Designer has a Guarantee of Success?",
+       subtitle = "Top 20 Designers for Board Games by Score", 
+       x = "", 
+       y = "Average rating (1-10)",
+       caption = "(based on data from Board Games Geek)") +
+  coord_flip() +
+  theme_light() 
+```
+
+
+# Which designer has to learn more about games?
+```{r}
+flop_designer <- games_sub %>%
+  separate_rows(designer, sep = ",") %>%
+  group_by(designer) %>%
+  summarise(min_rating = min(average_rating)) %>%
+  top_n(20, desc(min_rating)) %>%
+  select(designer) %>% 
+  ungroup() %>%
+  unlist()
+
+games_sub %>%
+  separate_rows(designer, sep = ",") %>%
+  filter(designer %in% flop_designer) %>%
+  ggplot(aes(x = fct_reorder(designer, average_rating), 
+             y = average_rating)) +
+  geom_boxplot() +
+  labs(title = "Which Designer has to learn more about Games?",
+       subtitle = "Flop 20 Designers for Board Games by Score", 
+       x = "", 
+       y = "Average rating (1-10)",
+       caption = "(based on data from Board Games Geek)") +
+  coord_flip() +
+  theme_light()
+```
+
+
+
+# Can I find a great game just from a look at the packeging?
+```{r}
+games_lm <- games_sub %>%
+  mutate(expansion = ifelse(is.na(expansion), 0, 1),
+         top_pub = ifelse(publisher %in% top_publisher, 1, 0))
+
+lm <- lm(average_rating ~ playing_time +
+         min_age + 
+         min_players +
+         max_players +
+         expansion,
+         data = games_lm)
+
+summary(lm)
+```
+
