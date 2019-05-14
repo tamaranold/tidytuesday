@@ -1,0 +1,175 @@
+---
+title: "Global Student to Teacher Ratios"
+author: "Tamara"
+date: "12 Mai 2019"
+output: html_document
+---
+# Load packages
+```{r, warning = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(summarytools)
+library(trelliscopejs)
+```
+
+# Read Data
+```{r}
+student_ratio <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-05-07/student_teacher_ratio.csv")
+
+```
+
+# Inspect Data
+```{r message=FALSE, warning=FALSE}
+view(dfSummary(student_ratio))
+```
+
+# Are there different ratios for different Education Level groups?
+```{r}
+student_ratio %>% 
+  filter(year ==  2015) %>% 
+  ggplot(aes(x = indicator, y = student_ratio)) +
+  geom_boxplot() +
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 45)) +
+  labs(title = "Student-Teacher-Ratio for different Education Levels",
+       subtitle = "For 2015",
+       caption = "data: UNESCO Institute of Statistics",
+       x = "",
+       y = "Student-Teacher-Ratio") +
+  coord_flip()
+
+
+```
+ 
+ 
+# Does the ratio change over time?
+```{r}
+student_ratio %>%
+  filter(indicator == "Primary Education") %>%
+  group_by(year) %>%
+  summarise(mean_ratio = mean(student_ratio, na.rm = TRUE), 
+            median_ratio = median(student_ratio, na.rm = TRUE),
+            min_ratio = min(student_ratio, na.rm = TRUE),
+            max_ratio = max(student_ratio, na.rm = TRUE)) %>%
+  ggplot(aes(x = year, y = mean_ratio)) +
+  geom_line() +
+  geom_ribbon(aes(x = year, ymin = min_ratio, ymax = max_ratio), 
+              fill = "lightblue", alpha = .4) + 
+  scale_x_continuous(breaks = 2012:2018) +
+  labs(title = "Developement of Student-Teacher-Ratio from 2012 to 2018",
+       subtitle = "In Primary Schools",
+       caption = "data: UNESCO Institute of Statistics") + 
+  theme_light()
+
+student_ratio %>%
+  group_by(indicator, year) %>%
+  summarise(mean_ratio = mean(student_ratio, na.rm = TRUE), 
+            median_ratio = median(student_ratio, na.rm = TRUE),
+            min_ratio = min(student_ratio, na.rm = TRUE),
+            max_ratio = max(student_ratio, na.rm = TRUE)) %>%
+  ggplot(aes(x = year, y = mean_ratio, color = indicator)) +
+  geom_line() +
+  scale_x_continuous(breaks = 2012:2018) +
+  labs(title = "Developement of Student-Teacher-Ratio from 2012 to 2018",
+       subtitle = "By Education Level",
+       caption = "data: UNESCO Institute of Statistics") + 
+  theme_light()
+
+student_ratio %>%
+  group_by(indicator, year) %>%
+  summarise(mean_ratio = mean(student_ratio, na.rm = TRUE), 
+            median_ratio = median(student_ratio, na.rm = TRUE),
+            min_ratio = min(student_ratio, na.rm = TRUE),
+            max_ratio = max(student_ratio, na.rm = TRUE)) %>%
+  ggplot(aes(x = year, y = median_ratio, color = indicator)) +
+  geom_line() +
+  scale_x_continuous(breaks = 2012:2018) +
+  labs(title = "Developement of Student-Teacher-Ratio from 2012 to 2018",
+       subtitle = "By Education Level",
+       caption = "data: UNESCO Institute of Statistics") + 
+  theme_light()
+```
+ 
+
+## What happend with the max-values in 2017/2018 and the min-values in 2019 in primary school?
+```{r}
+student_ratio %>%
+  filter(indicator == "Primary Education",
+         year %in% c(2015, 2016, 2017, 2018)) %>%
+  group_by(year) %>%
+  top_n(3, student_ratio) %>%
+  ungroup() %>%
+  select(year, country_code, student_ratio) %>%
+  spread(year, student_ratio)
+
+
+student_ratio %>%
+  filter(indicator == "Primary Education",
+         year %in% c(2015, 2016, 2017, 2018)) %>%
+  group_by(year) %>%
+  top_n(3, desc(student_ratio)) %>%
+  ungroup() %>%
+  select(year, country_code, student_ratio) %>%
+  spread(year, student_ratio)
+```
+
+## Why does the mean-ratio in Pre-Primary Education rise in 2017 and 2018?
+```{r}
+student_ratio %>%
+  filter(indicator == "Pre-Primary Education",
+         year %in% c(2015, 2016, 2017, 2018)) %>%
+  group_by(year) %>%
+  top_n(3, student_ratio) %>%
+  ungroup() %>%
+  select(year, country_code, student_ratio) %>%
+  spread(year, student_ratio)
+
+student_ratio %>%
+  filter(indicator == "Pre-Primary Education",
+         year %in% c(2015, 2016, 2017, 2018)) %>%
+  group_by(year) %>%
+  top_n(3, desc(student_ratio)) %>%
+  ungroup() %>%
+  select(year, country_code, student_ratio) %>%
+  spread(year, student_ratio)
+
+student_ratio %>%
+  filter(indicator == "Pre-Primary Education",
+         year %in% c(2015, 2016, 2017, 2018)) %>%
+  group_by(year) %>%
+  summarise(N = n())
+```
+
+
+
+
+## Why does the mean-ratio in Post-Secondary Non-Tertiary Education rise in 2013 and 2014?
+```{r}
+unique(student_ratio$indicator)
+
+student_ratio %>%
+  filter(indicator == "Post-Secondary Non-Tertiary Education",
+         year %in% c(2012, 2013, 2014, 2015)) %>%
+  group_by(year) %>%
+  top_n(3, student_ratio) %>%
+  ungroup() %>%
+  select(year, country_code, student_ratio) %>%
+  spread(year, student_ratio)
+
+student_ratio %>%
+  filter(indicator == "Post-Secondary Non-Tertiary Education",
+         year %in% c(2012, 2013, 2014, 2015)) %>%
+  group_by(year) %>%
+  top_n(3, desc(student_ratio)) %>%
+  ungroup() %>%
+  select(year, country_code, student_ratio) %>%
+  spread(year, student_ratio)
+
+student_ratio %>%
+  filter(indicator == "Post-Secondary Non-Tertiary Education",
+         year %in% c(2012, 2013, 2014, 2015)) %>%
+  group_by(year) %>%
+  summarise(N = n())
+```
+
+
