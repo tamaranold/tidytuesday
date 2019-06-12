@@ -1,0 +1,66 @@
+---
+title: "Phd Award"
+author: "Tamara"
+date: "9 Juni 2019"
+output: html_document
+---
+
+# Load Packages
+```{r}
+library(tidyverse)
+library(summarytools)
+library(hrbrthemes)
+library(gganimate)
+```
+
+# Read Data
+```{r}
+phd_field <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-02-19/phd_by_field.csv")
+```
+
+# View Data
+```{r error = FALSE}
+View(phd_field)
+view(dfSummary(phd_field))
+```
+
+# Number of Phd per Broad Field over time
+```{r warning = FALSE}
+n_phd_year <- phd_field %>%
+  group_by(broad_field, year) %>% 
+  summarise(n = sum(n_phds, na.rm = TRUE)) %>% 
+  ungroup() %>%
+  mutate(broad_field = fct_relevel(broad_field, rev)) %>%
+  mutate(broad_field = fct_relevel(broad_field, "Other"))
+
+field_year_plot<- ggplot(n_phd_year, aes(x = broad_field,
+                       y = n, 
+                       fill = broad_field)) +
+  geom_col() +
+  geom_text(aes(label = as.integer(n)), hjust = -.2) +
+  scale_fill_ipsum() +
+  labs(title = "Number of PhD degrees awraded in the USA",
+       subtitle = "By broad field in {frame_time}",
+       caption = "Data by NSF",
+       x = "",
+       y = "Number of PhDs") +
+  coord_flip() +
+  theme_ipsum_rc() +
+  theme(legend.position = "none",
+        panel.grid.major.y = element_blank()) +
+  transition_time(as.integer(year)) 
+
+
+animate(field_year_plot, 
+        fps = 1, duration = 10, 
+        height = 500, width = 800)
+
+anim_save("test.gif")
+```
+
+
+
+
+
+
+
