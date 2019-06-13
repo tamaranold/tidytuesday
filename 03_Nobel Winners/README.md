@@ -1,9 +1,9 @@
-Nodel Winners
+Birth Country
 ------------------
 
 ![](WinnersInWorld.png)
 
-Nodel Winners
+Gender
 ------------------
 
 ![](CountryAndGender.png)
