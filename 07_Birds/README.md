@@ -5,4 +5,9 @@ Birds in Canada at Christmas
 
 Starling at Christmas
 ------------------------------
-![](straling.png)
+![](starling.png)
+
+
+Starling at Christmas - Animated
+------------------------------
+![](starling.html)
