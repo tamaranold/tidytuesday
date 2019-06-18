@@ -1,6 +1,6 @@
 Birds in Canada at Christmas
 ------------------------------
-![](birds.gif)
+![](birds.png)
 
 
 Starling at Christmas
