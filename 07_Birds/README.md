@@ -9,4 +9,4 @@ Starling at Christmas
 
 Starling at Christmas -Animated
 ------------------------------
-![](starling-animated.gif)
+![](starling_animated.gif)
