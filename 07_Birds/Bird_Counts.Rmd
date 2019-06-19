@@ -12,6 +12,7 @@ library(summarytools)
 library(hrbrthemes)
 library(purrr)
 library(plotly)
+library(gganimate)
 ```
 
 # Read Data
@@ -79,6 +80,34 @@ bird_counts %>%
 
 ggsave("starling.png", height = 200, width = 300, units = "mm")
 ```
+# Most Common Bird - European Starling
+```{r}
+b <- bird_counts %>%
+  group_by(year) %>% 
+  mutate(Starling = sum(how_many_counted)) %>%
+  ungroup() %>% 
+  mutate(Total = how_many_counted) %>%
+  filter(species == "European Starling") %>%
+  gather(bird, count, Total, Starling) %>%
+  select(year, bird, count) %>%
+  ggplot(aes(x = year, y = count, color = bird)) +
+  geom_line() +
+  scale_color_discrete(name = "Bird Counts", 
+                    labels = c("Total Number of Birds", "European Starling")) +
+  labs(title = "European Starling doesn't like Christmas in Canada anymore",
+       subtitle = "Bird Counts from 1921 to 2017 in Hamilton (Canada)",
+       caption = "Bird Studies Canada (twitter handle: @BirdsCanada)") +
+  theme_ipsum_rc() +
+  theme(legend.position = "bottom") +
+  geom_point() +
+  transition_reveal(year)
+
+animate(b, height = 500, width = 750)
+
+anim_save("starling_animated.gif")
+
+```
+
 
 # Most Common Bird - European Starling Animated
 ```{r}
@@ -107,6 +136,7 @@ p <- plot_ly(bird_frame) %>%
   animation_slider(hide = TRUE) 
 
 htmlwidgets::saveWidget(as_widget(p), "starling.html")
+
 ```
 
 
