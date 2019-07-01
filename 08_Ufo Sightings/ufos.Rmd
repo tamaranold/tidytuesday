@@ -1,0 +1,121 @@
+---
+title: "UFOs"
+author: "Tamara"
+date: "27 Juni 2019"
+output: html_document
+---
+
+# Load Packages
+```{r}
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(maps)
+library(hrbrthemes)
+library(ggthemes)
+library(gridExtra)
+library(gghighlight)
+library(gtable)
+
+```
+
+# Read Data
+```{r}
+ufo_sightings <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-06-25/ufo_sightings.csv")
+
+```
+
+# Glimpse 
+```{r}
+head(ufo_sightings)
+
+ufo <- ufo_sightings %>%
+  separate(date_time, c("date", "time"), sep = " ") %>%
+  mutate(date = mdy(date),
+         time = hm(time), 
+         date_documented = mdy(date_documented),
+         day_gap = difftime(date_documented, date, units = "days")) %>%
+  filter(date > dmy("01-01-2000"))
+
+
+
+head(ufo)
+```
+
+# Do you wanna see a UFO?
+```{r}
+# Map - where have UFOs been seen?
+
+world_dat <- map_data('world') %>%
+  filter(region != "Antarctica") 
+
+ufo %>%
+  count(country) %>% 
+  arrange(desc(n))
+  
+ggplot() +  
+  geom_map(data = world_dat, map = world_dat, aes(x = long, y = lat, group = group, map_id=region), fill = "white", colour = "#7f7f7f", size=0.5) +
+  geom_point(data = ufo, aes(x = longitude, y = latitude)) +
+  labs(title = "Where to be?", 
+       subtitle = "Global UFO Sightings between 2000 and 2014",
+       caption = "Best countries to be are USA, Canada, Great Britain and Australia.") +
+  theme_ipsum_rc() +
+  theme(axis.line = element_blank(), 
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(), 
+        axis.title = element_blank(), 
+        panel.background = element_blank(), 
+        panel.border = element_blank(), 
+        panel.grid = element_blank(), 
+        panel.spacing = unit(0, "lines"), 
+        plot.background = element_blank(), 
+        legend.position = "none")
+
+ggsave("UFOsByCountry.png", width = 10)
+
+# When - month  
+ufo %>%
+  mutate(month = month(ufo$date, label = TRUE)) %>%
+  count(month) %>%
+  ggplot(aes(x = month, y = n)) + 
+  geom_col() +
+  labs(title = "When to be?", 
+       subtitle = "Global UFO Sightings between 2000 and 2014",
+       caption = "Have a Look during the Summer.", 
+       x = "Month",
+       y = "Number of Sightings") +
+  gghighlight(n > 6000) +
+  theme_ipsum_rc() 
+
+ggsave("UFOsByMonth.png")
+
+# How does they look like
+ufo %>%
+  mutate(ufo_shape = fct_explicit_na(ufo_shape, "other"),
+         ufo_shape = fct_lump(ufo_shape, n = 3, 
+                              other_level = "other")) %>%
+  count(ufo_shape) %>%
+  arrange(desc(n)) %>%
+  mutate(x = c(2, 1, 2, 1),
+         y = c(-3, 3, 3, -3)) %>%
+  ggplot(aes(x = x, y = y, group = ufo_shape, shape = ufo_shape)) +
+  geom_point(size = 25, shape = c(6, 23, 16, 17), fill = "black") +
+  labs(title = "What to look for?",
+       subtitle = "Global UFO Sightings between 2000 and 2014",
+       caption = "Look for a light.") +
+  xlim(c(0.75, 2.5)) +
+  ylim(c(-5.5, 5.5)) +
+  annotate("text", label = "Other: 37.875", x = 2.35, y = -3, family = "Roboto Condensed") +
+  annotate("text", label = "Circle: 6.428", x = 2.35, y = 3, family = "Roboto Condensed") + 
+  annotate("text", label = "Triangle: 6.234", x = 1.35, y = -3, family = "Roboto Condensed") +
+  annotate("text", label = "Light: 14.271", x = 1.35, y = 3, family = "Roboto Condensed") +
+  theme_ipsum_rc() +
+  theme(legend.position = "none",
+        line = element_blank(), rect = element_blank(),
+        axis.text = element_blank(), axis.title = element_blank(), 
+        axis.ticks.length = unit(0, "pt")) 
+
+ggsave("UFOsByShape.png")
+
+```
+
