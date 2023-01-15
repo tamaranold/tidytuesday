@@ -8,6 +8,5 @@ My playground for exploring data
 More Information on GitHub: https://github.com/rfordatascience/tidytuesday
 
 ## Last plots 
-![alt text](https://github.com/tamaranold/tidytuesday/blob/2277053ad15faf148aacc5cf67eefdefd61aae8f/2022/2022_05_26_NYT%20Bestsellers/NYT.jpg | width=100)
-
-![alt_text](https://github.com/tamaranold/tidytuesday/blob/2277053ad15faf148aacc5cf67eefdefd61aae8f/2023/2023_02_Bird%20counts/Plot_most%20common%20birds.png)
+<img src="https://github.com/tamaranold/tidytuesday/blob/2277053ad15faf148aacc5cf67eefdefd61aae8f/2022/2022_05_26_NYT%20Bestsellers/NYT.jpg" width=50% height=50%>
+<img src="https://github.com/tamaranold/tidytuesday/blob/2277053ad15faf148aacc5cf67eefdefd61aae8f/2023/2023_02_Bird%20counts/Plot_most%20common%20birds.png" width=50% height=50%>
