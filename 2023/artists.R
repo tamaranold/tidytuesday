@@ -55,6 +55,32 @@ plot_data <- artists_mean_space %>%
             by = c("artist_name" = "name"))
 
 # information about books ans spacing ------------------------------------------
+info_by_book <- artists %>%
+  group_by(book) %>%
+  summarise(edition_min = min(edition_number),
+            edition_max = max(edition_number),
+            edition_n = length(unique(edition_number)),
+            year_min = min(year),
+            year_max = max(year),
+            artists_n = length(unique(artist_unique_id))) %>%
+  add_column(book_full_name = c("Gardner’s Art Through the Ages",
+                                "Janson’s History of Art"))
+
+artists %>%
+  filter(book == "Janson") %>%
+  summarise(unique(edition_number))
+
+label_books <- paste0(info_by_book$book_full_name,
+                     ", including ", 
+                     info_by_book$edition_max, 
+                     " editions from ", 
+                     info_by_book$year_min, 
+                     " to ", 
+                     info_by_book$year_max, 
+                     ", in total the series features ",
+                     info_by_book$artists_n, 
+                     " artists")
+
 
 
 # create plot ------------------------------------------------------------------
@@ -74,10 +100,12 @@ ggplot(aes(x = artist_name,
         vjust = - 0.4)
   ) +
   labs(title = "Most important artists off all time",
-       subtitle = "Based on the number of pages in art history textbooks") +
+       subtitle = "Based on the average number of pages in art history textbooks") +
   scale_x_reordered() +
-  scale_y_continuous(limits = c(0, 3.5)) +
+  scale_y_continuous(limits = c(0, 3.7)) +
   facet_wrap(~ book,
              ncol = 1,
-             scales = "free_x") 
+             scales = "free_x",
+             labeller = labeller(book = c(Gardner = label_books[1],
+                                   Janson = label_books[2]))) 
  
